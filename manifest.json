@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Tickr",
+  "version": "1.0",
+  "description": "Ticketmaster resale tracker",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://api.telegram.org/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.ticketmaster.co.uk/*",
+        "https://www.ticketmaster.com/*"
+      ],
+      "js": ["content.js"]
+    }
+  ]
+}
