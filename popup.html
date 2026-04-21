@@ -42,6 +42,25 @@
       text-align: left;
     }
 
+    .note {
+      margin: 10px 0 14px;
+      padding: 10px;
+      border-radius: 10px;
+      background: #ffffff;
+      font-size: 12px;
+      line-height: 1.4;
+      text-align: left;
+      border: 1px solid #e2e2e2;
+    }
+
+    .subnote {
+      margin: 6px 0 10px;
+      font-size: 12px;
+      line-height: 1.4;
+      text-align: left;
+      color: #444;
+    }
+
     /* ℹ️ Tooltip */
     .info {
       position: relative;
@@ -79,9 +98,17 @@
 
   <div id="status">🔴 Paused</div>
 
+  <div class="note">
+    When Ticketmaster reserves tickets, the hold usually lasts about 1 minute 30 seconds so you have time to complete checkout.
+  </div>
+
   <button id="startBtn">▶️ Start tracking</button>
 
   <!-- TELEGRAM -->
+  <div class="subnote">
+    Add your Telegram details below if you want a phone notification when Tickr detects a ticket.
+  </div>
+
   <div class="label">
     Telegram Bot Token
     <span class="info">ℹ️

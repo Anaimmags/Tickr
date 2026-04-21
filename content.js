@@ -4,6 +4,28 @@
 
 let isRunning = false;
 let lastNotification = 0;
+let nextRunTimer = null;
+
+const NEGATIVE_AVAILABILITY_PHRASES = [
+  "there aren’t enough tickets",
+  "there aren't enough tickets",
+  "search for tickets",
+  "resale tickets will appear below when they are available",
+  "tickets will appear below when they are available",
+  "no tickets available",
+  "no results available"
+];
+
+const PURCHASE_CTA_PHRASES = [
+  "buy now",
+  "checkout",
+  "go to checkout",
+  "continue",
+  "next",
+  "place order",
+  "add to basket",
+  "add to cart"
+];
 
 // 🔊 Sound
 function playSound() {
@@ -50,34 +72,51 @@ function notify() {
   document.title = "🎟️ TICKETS FOUND";
 }
 
+function randomDelay(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getPageText() {
+  return document.body.innerText.toLowerCase();
+}
+
+function hasPurchaseCTA() {
+  return [...document.querySelectorAll("button, a")]
+    .some((el) => {
+      const label = (el.innerText || "").trim().toLowerCase();
+      return PURCHASE_CTA_PHRASES.some((phrase) => label.includes(phrase));
+    });
+}
+
 // 🎯 Detect tickets
 function detectTickets() {
-  const text = document.body.innerText.toLowerCase();
+  const text = getPageText();
 
-  if (text.includes("there aren’t enough tickets")) return false;
-  if (text.includes("search for tickets")) return false;
+  if (NEGATIVE_AVAILABILITY_PHRASES.some((phrase) => text.includes(phrase))) {
+    return false;
+  }
 
-  return text.includes("£");
+  const hasPrice = /[£$]\s?\d/.test(text);
+
+  return hasPrice && hasPurchaseCTA();
 }
 
 // 🎟️ Reserved
 function hasReserved() {
-  return document.body.innerText
-    .toLowerCase()
-    .includes("tickets reserved for");
+  const text = getPageText();
+  return text.includes("tickets reserved for");
 }
 
 // ⏳ Loading
 function isLoading() {
-  const text = document.body.innerText.toLowerCase();
+  const text = getPageText();
   return text.includes("loading") || text.includes("searching");
 }
 
 // ⚠️ Error
 function hasError() {
-  return document.body.innerText
-    .toLowerCase()
-    .includes("something went wrong");
+  const text = getPageText();
+  return text.includes("something went wrong");
 }
 
 // 🔁 Click Find
@@ -109,7 +148,10 @@ function runTracker() {
 
   chrome.storage.local.get(["enabled"], (data) => {
 
-    if (!data.enabled) return;
+    if (!data.enabled) {
+      isRunning = false;
+      return;
+    }
 
     if (isRunning) return;
     isRunning = true;
@@ -118,44 +160,11 @@ function runTracker() {
 
       if (hasReserved()) {
         notify();
-        scheduleNext(8000);
+        scheduleNext(12000);
         return;
       }
 
       if (detectTickets()) {
         notify();
-        scheduleNext(6000);
-        return;
-      }
-
-      if (isLoading()) {
-        scheduleNext(3000);
-        return;
-      }
-
-      if (hasError()) {
-        clickFind() || clickSearchAgain();
-        scheduleNext(4000);
-        return;
-      }
-
-      clickFind() || clickSearchAgain();
-      scheduleNext();
-
-    } catch (err) {
-      console.log("Loop error:", err);
-      scheduleNext(5000);
-    }
-
-  });
-}
-
-// ⏱️ Next loop
-function scheduleNext(delay = Math.random() * 2000 + 3000) {
-  setTimeout(() => {
-    isRunning = false;
-  }, delay);
-}
-
-// 🚀 Start loop
-setInterval(runTracker, 1000);
+        scheduleNext(10000);
+        return
