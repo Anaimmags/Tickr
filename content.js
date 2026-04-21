@@ -167,4 +167,44 @@ function runTracker() {
       if (detectTickets()) {
         notify();
         scheduleNext(10000);
-        return
+        return;
+      }
+
+      if (isLoading()) {
+        scheduleNext(randomDelay(5000, 7000));
+        return;
+      }
+
+      if (hasError()) {
+        clickFind() || clickSearchAgain();
+        scheduleNext(randomDelay(9000, 12000));
+        return;
+      }
+
+      clickFind() || clickSearchAgain();
+      scheduleNext(randomDelay(7000, 11000));
+
+    } catch (err) {
+      console.log("Loop error:", err);
+      scheduleNext(randomDelay(10000, 14000));
+    }
+
+  });
+}
+
+// ⏱️ Next loop
+function scheduleNext(delay = randomDelay(7000, 11000)) {
+  isRunning = false;
+
+  if (nextRunTimer) {
+    clearTimeout(nextRunTimer);
+  }
+
+  nextRunTimer = setTimeout(() => {
+    nextRunTimer = null;
+    runTracker();
+  }, delay);
+}
+
+// 🚀 Start loop
+runTracker();
